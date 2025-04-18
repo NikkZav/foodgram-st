@@ -1,15 +1,37 @@
-# users/admin.py
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import FoodgramUser
+from .models import FoodgramUser, Subscription
+from recipes.models import ShoppingCart, Favorite
 
-# Добавляем поле с биографией 
-# к стандартному набору полей (fieldsets) пользователя в админке.
-UserAdmin.fieldsets += (
-    # Добавляем кортеж, где первый элемент — это название раздела в админке,
-    # а второй элемент — словарь, где под ключом fields можно указать нужные поля.
-    ('Extra Fields', {'fields': ('avatar',)}),
-)
-# Регистрируем модель в админке:
-admin.site.register(FoodgramUser, UserAdmin)
+
+class ShoppingCartAdmin(admin.TabularInline):
+    model = ShoppingCart
+    extra = 1
+    autocomplete_fields = ['recipe']
+
+
+class FavoriteAdmin(admin.TabularInline):
+    model = Favorite
+    extra = 1
+    autocomplete_fields = ['recipe']
+
+
+class SubscriptionAdmin(admin.TabularInline):
+    model = Subscription
+    fk_name = 'user'
+    extra = 1
+
+
+class FoodgramUserAdmin(BaseUserAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name')
+    search_fields = ('username', 'email')
+    list_filter = ('username', 'email')
+    inlines = [ShoppingCartAdmin, FavoriteAdmin, SubscriptionAdmin]
+
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('Дополнительно', {'fields': ('avatar',)}),
+    )
+
+
+admin.site.register(FoodgramUser, FoodgramUserAdmin)
