@@ -3,7 +3,7 @@ from djoser.views import (
     TokenCreateView, TokenDestroyView
 )
 from rest_framework.routers import DefaultRouter
-from .views import IngredientViewSet, RecipeViewSet
+from recipes.views import IngredientViewSet, RecipeViewSet
 from users.views import CustomUserViewSet
 
 
