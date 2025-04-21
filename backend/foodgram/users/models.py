@@ -5,7 +5,7 @@ from django.db import models
 
 class FoodgramUser(AbstractUser):
     email = models.EmailField('Электронная почта', max_length=254,
-                              null=False, blank=False)
+                              null=False, blank=False, unique=True)
     username = models.CharField('Имя пользователя', max_length=150,
                                 null=False, blank=False, unique=True)
     first_name = models.CharField('Имя', max_length=150,
@@ -14,6 +14,8 @@ class FoodgramUser(AbstractUser):
                                  null=False, blank=False)
     avatar = models.ImageField('Аватар', upload_to='users/avatars/',
                                null=True, blank=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
 
 class Subscription(models.Model):
