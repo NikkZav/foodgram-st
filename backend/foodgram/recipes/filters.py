@@ -20,11 +20,15 @@ class RecipeFilter(FilterSet):
         fields = ('is_favorited', 'is_in_shopping_cart', 'author')
 
     def filter_is_favorited(self, queryset, name, value):
-        if value and self.request.user.is_authenticated:
+        if self.request.user.is_anonymous:
+            return queryset.none()
+        if value:
             return queryset.filter(favorites__user=self.request.user)
         return queryset
 
     def filter_is_in_cart(self, queryset, name, value):
-        if value and self.request.user.is_authenticated:
+        if self.request.user.is_anonymous:
+            return queryset.none()
+        if value:
             return queryset.filter(shopping_cart__user=self.request.user)
         return queryset

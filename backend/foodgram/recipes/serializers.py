@@ -41,11 +41,16 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'name', 'image', 'text', 'cooking_time')
 
     def get_is_favorited(self, obj):
-        return obj.favorites.filter(user=self.context['request'].user).exists()
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return obj.favorites.filter(user=user).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        return obj.shopping_cart.filter(user=self.context['request'].user
-                                        ).exists()
+        user = self.context['request'].user
+        if user.is_anonymous:
+            return False
+        return obj.shopping_cart.filter(user=user).exists()
 
     def create(self, validated_data):
         components = validated_data.pop('components')

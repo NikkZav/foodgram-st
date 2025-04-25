@@ -102,3 +102,8 @@ class ShoppingCart(models.Model):
         ]
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+
+
+class ShortLink(models.Model):
+    slug = models.SlugField(unique=True, max_length=10)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
