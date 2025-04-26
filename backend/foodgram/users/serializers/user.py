@@ -1,27 +1,13 @@
+# users/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from users.models import Subscription
-from utils.serializers import Base64ImageField
+from recipes.serializers.shared import RecipeShortSerializer
+from users.serializers.base import BaseUserSerializer
+
 
 User = get_user_model()
-
-
-class AvatarSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=True, allow_null=False)
-
-    class Meta:
-        model = User
-        fields = ('avatar',)
-
-
-class BaseUserSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=False, allow_null=True)
-
-    class Meta:
-        model = User
-        fields: tuple[str, ...] = ('email', 'username',
-                                   'first_name', 'last_name', 'avatar')
 
 
 class AuthorSerializer(BaseUserSerializer):
@@ -54,3 +40,22 @@ class UserCreateSerializer(BaseUserSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class UserWithRecipesSerializer(AuthorSerializer):
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta(AuthorSerializer.Meta):
+        fields = AuthorSerializer.Meta.fields + ('recipes', 'recipes_count')
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        recipes_limit = self.context.get('request').query_params.get('recipes_limit')
+        if recipes_limit is not None and recipes_limit.isdigit():
+            return RecipeShortSerializer(
+                obj.recipes.all()[:int(recipes_limit)], many=True
+            ).data
+        return RecipeShortSerializer(obj.recipes.all(), many=True).data

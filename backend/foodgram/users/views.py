@@ -7,10 +7,14 @@ from django.contrib.auth import get_user_model
 from djoser.views import UserViewSet
 from djoser.serializers import SetPasswordSerializer
 
-from .serializers import (
-    AuthorSerializer, UserCreateSerializer, BaseUserSerializer,
-    AvatarSerializer
+from .serializers.base import (
+    BaseUserSerializer, AvatarSerializer
 )
+from .serializers.user import (
+    AuthorSerializer, UserCreateSerializer,
+    UserWithRecipesSerializer,
+)
+from .models import Subscription
 
 
 User = get_user_model()
@@ -19,6 +23,10 @@ User = get_user_model()
 class CustomUserViewSet(UserViewSet):
 
     def get_queryset(self):
+        if self.action == 'me':
+            return User.objects.filter(id=self.request.user.id)
+        if self.action == 'subscriptions':
+            return User.objects.filter(following__user=self.request.user)
         return User.objects.all()
 
     def get_serializer_class(self):
@@ -30,6 +38,8 @@ class CustomUserViewSet(UserViewSet):
             return SetPasswordSerializer
         if self.action == 'me_avatar':
             return AvatarSerializer
+        if self.action == 'subscriptions':
+            return UserWithRecipesSerializer
         return BaseUserSerializer
 
     def get_permissions(self):
@@ -45,3 +55,28 @@ class CustomUserViewSet(UserViewSet):
             request.user.avatar.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return self.me(request, *args, **kwargs)
+
+    @action(['get'], detail=False)
+    def subscriptions(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    @action(['post', 'delete'], detail=True)
+    def subscribe(self, request, *args, **kwargs):
+        user_to_subscribe = self.get_object()
+        if request.method == 'POST':
+            if user_to_subscribe == request.user:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'errors': 'Вы не можете подписаться на себя'})
+            if Subscription.objects.filter(user=request.user,
+                                           subscribed_to=user_to_subscribe).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'errors': 'Вы уже подписаны на этого пользователя'})
+            Subscription.objects.create(user=request.user, subscribed_to=user_to_subscribe)
+            return Response(status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            if not Subscription.objects.filter(user=request.user,
+                                               subscribed_to=user_to_subscribe).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'errors': 'Вы не подписаны на этого пользователя'})
+            Subscription.objects.filter(user=request.user, subscribed_to=user_to_subscribe).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)

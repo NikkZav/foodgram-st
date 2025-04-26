@@ -7,7 +7,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import RecipeFilter
 from .models import Ingredient, Recipe, ShoppingCart, Favorite
-from .serializers import IngredientSerializer, RecipeSerializer, RecipeShortSerializer
+from .serializers.recipe import IngredientSerializer, RecipeSerializer
+from .serializers.shared import RecipeShortSerializer
 from utils.gen_utils import generate_unique_urn
 
 

@@ -1,6 +1,7 @@
+# recipes/serializers.py
 from rest_framework import serializers
-from recipes.models import Ingredient, Recipe, Component, Favorite
-from users.serializers import AuthorSerializer
+from recipes.models import Ingredient, Recipe, Component
+from users.serializers.user import AuthorSerializer
 from utils.serializers import Base64ImageField, set_if_changed
 
 
@@ -99,11 +100,3 @@ class RecipeSerializer(serializers.ModelSerializer):
                     current_components[ingr_id].delete()
 
         return instance
-
-
-class RecipeShortSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
