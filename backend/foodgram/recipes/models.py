@@ -1,11 +1,15 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from utils.gen_utils import generate_unique_slug
 
 
 User = get_user_model()
 
 
 class Recipe(models.Model):
+    slug = models.SlugField(unique=True, max_length=10,
+                            verbose_name='Уникальный слаг',
+                            blank=True, null=True)
     name = models.CharField(max_length=200,
                             verbose_name='Название')
     author = models.ForeignKey(
@@ -31,6 +35,11 @@ class Recipe(models.Model):
         ordering = ('-publish_date',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # Сначала сохраним объект, чтобы получить id
+        self.slug = generate_unique_slug(self)  # Затем сгенерируем уникальный слаг
+        super().save(*args, **kwargs)  # И снова сохраним объект
 
     def __str__(self):
         return self.name
@@ -102,8 +111,3 @@ class ShoppingCart(models.Model):
         ]
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-
-
-class ShortLink(models.Model):
-    slug = models.SlugField(unique=True, max_length=10)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)

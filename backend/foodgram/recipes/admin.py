@@ -9,6 +9,7 @@ class ComponentInline(admin.TabularInline):  # или admin.StackedInline
 
 
 class RecipeAdmin(admin.ModelAdmin):
+    readonly_fields = ('slug',)
     list_display = ('name', 'author')
     search_fields = ('name', 'author__username')
     list_filter = ('author',)

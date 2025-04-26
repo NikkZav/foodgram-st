@@ -1,4 +1,3 @@
-from xml.dom.minidom import Element
 from django.shortcuts import get_object_or_404, redirect
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -8,12 +7,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import RecipeFilter
 from .models import (
-    Ingredient, Recipe, ShortLink, ShoppingCart, Favorite
+    Ingredient, Recipe, ShoppingCart, Favorite
 )
 from .serializers import (
-    IngredientSerializer, RecipeSerializer
+    IngredientSerializer, RecipeSerializer, RecipeShortSerializer
 )
-from utils.recipe_utils import generate_unique_slug
+from utils.gen_utils import generate_unique_slug
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -41,11 +40,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, url_path='get-link', url_name='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        short_link, created = ShortLink.objects.get_or_create(recipe=recipe)
-        if created:
-            short_link.slug = generate_unique_slug()
-            short_link.save()
-        short_url = request.build_absolute_uri(f'/s/{short_link.slug}/')
+        if not recipe.slug:  # если у рецепта нет слага, то генерируем и сохраняем его
+            recipe.slug = generate_unique_slug(recipe)
+            recipe.save()
+        short_url = request.build_absolute_uri(f'/s/{recipe.slug}/')
         return Response({'short_url': short_url}, status=status.HTTP_200_OK)
 
     @action(methods=['post', 'delete'], detail=True)
@@ -56,7 +54,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                                                          recipe=recipe)
             if created:  # если рецепта нет в корзине, то добавляем и возвращаем 201
                 recipe_in_cart.save()
-                return Response(status=status.HTTP_201_CREATED)
+                return Response(status=status.HTTP_201_CREATED,
+                                data=RecipeShortSerializer(recipe).data)
             else:  # если рецепт уже в корзине, то возвращаем 400
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'errors': 'Рецепт уже в корзине'})
@@ -76,7 +75,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                                                          recipe=recipe)
             if created:  # если рецепта нет в избранном, то добавляем и возвращаем 201
                 recipe_in_favorite.save()
-                return Response(status=status.HTTP_201_CREATED)
+                return Response(status=status.HTTP_201_CREATED,
+                                data=RecipeShortSerializer(recipe).data)
             else:  # если рецепт уже в избранном, то возвращаем 400
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'errors': 'Рецепт уже в избранном'})
@@ -90,5 +90,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 def redirect_to_recipe(request, slug):
-    short_link = get_object_or_404(ShortLink, slug=slug)
-    return redirect(f'/api/recipes/{short_link.recipe.pk}/')
+    recipe = get_object_or_404(Recipe, slug=slug)
+    return redirect(f'/api/recipes/{recipe.pk}/')

@@ -99,3 +99,11 @@ class RecipeSerializer(serializers.ModelSerializer):
                     current_components[ingr_id].delete()
 
         return instance
+
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
