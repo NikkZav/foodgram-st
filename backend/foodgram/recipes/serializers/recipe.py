@@ -29,6 +29,7 @@ class ComponentSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     ingredients = ComponentSerializer(source='components', many=True)
     author = AuthorSerializer(read_only=True)
     image = Base64ImageField(required=False, allow_null=True)

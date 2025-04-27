@@ -1,4 +1,7 @@
-from django_filters import FilterSet, TypedChoiceFilter, NumberFilter
+from django_filters import (
+    FilterSet, TypedChoiceFilter, NumberFilter
+)
+from rest_framework.filters import SearchFilter
 from recipes.models import Recipe
 
 
@@ -32,3 +35,7 @@ class RecipeFilter(FilterSet):
         if value:
             return queryset.filter(shopping_cart__user=self.request.user)
         return queryset
+
+
+class NameSearchFilter(SearchFilter):
+    search_param = 'name'

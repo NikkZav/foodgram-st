@@ -1,11 +1,14 @@
 from django.shortcuts import get_object_or_404, redirect
-from rest_framework import viewsets, status
+from django.db.models.functions import Lower
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .filters import RecipeFilter
+from .filters import RecipeFilter, NameSearchFilter
+from .pagination import LimitPageNumberPagination
 from .models import Ingredient, Recipe, ShoppingCart, Favorite
 from .serializers.recipe import IngredientSerializer, RecipeSerializer
 from .serializers.shared import RecipeShortSerializer
@@ -15,6 +18,11 @@ from utils.gen_utils import generate_unique_urn
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = (DjangoFilterBackend, NameSearchFilter,
+                       filters.OrderingFilter)
+    search_fields = ("name",)
+    ordering = ("id",)
+    pagination_class = None  # Отключаем пагинацию для ингредиентов
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -23,6 +31,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     search_fields = ("name",)
+    pagination_class = LimitPageNumberPagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -39,9 +48,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         if not recipe.urn:  # если у рецепта нет urn, то генерируем и сохраняем его
             recipe.urn = generate_unique_urn(recipe)
-            recipe.save()
+            recipe.save(update_fields=["urn"])
         short_url = request.build_absolute_uri(f"/s/{recipe.urn}/")
-        return Response({"short_url": short_url}, status=status.HTTP_200_OK)
+        return Response({"short-link": short_url}, status=status.HTTP_200_OK)
 
     @action(methods=["post", "delete"], detail=True)
     def shopping_cart(self, request, pk=None):
@@ -102,4 +111,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 def redirect_to_recipe(request, urn):
     recipe = get_object_or_404(Recipe, urn=urn)
-    return redirect(f"/api/recipes/{recipe.pk}/")
+    return redirect(f"/recipes/{recipe.pk}/")

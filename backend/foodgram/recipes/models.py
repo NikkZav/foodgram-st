@@ -26,11 +26,6 @@ class Recipe(models.Model):
         verbose_name = "Рецепт"
         verbose_name_plural = "Рецепты"
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # Сначала сохраним объект, чтобы получить id
-        self.urn = generate_unique_urn(self)  # Затем сгенерируем уникальный слаг
-        super().save(*args, **kwargs)  # И снова сохраним объект
-
     def __str__(self):
         return self.name
 
