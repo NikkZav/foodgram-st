@@ -13,6 +13,7 @@ from .models import Ingredient, Recipe, ShoppingCart, Favorite
 from .serializers.recipe import IngredientSerializer, RecipeSerializer
 from .serializers.shared import RecipeShortSerializer
 from utils.gen_utils import generate_unique_urn
+from shopping_list.views import download_shopping_cart_pdf
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -53,6 +54,34 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response({"short-link": short_url}, status=status.HTTP_200_OK)
 
     @action(methods=["post", "delete"], detail=True)
+    def favorite(self, request, pk=None):
+        recipe = self.get_object()
+        if request.method == "POST":
+            recipe_in_favorite, created = Favorite.objects.get_or_create(
+                user=request.user, recipe=recipe
+            )
+            if created:  # если рецепта нет в избранном, то добавляем и возвращаем 201
+                recipe_in_favorite.save()
+                return Response(
+                    status=status.HTTP_201_CREATED,
+                    data=RecipeShortSerializer(recipe).data,
+                )
+            else:  # если рецепт уже в избранном, то возвращаем 400
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"errors": "Рецепт уже в избранном"},
+                )
+        elif request.method == "DELETE":
+            if Favorite.objects.filter(user=request.user, recipe=recipe).exists():
+                Favorite.objects.filter(user=request.user, recipe=recipe).delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:  # если рецепта нет в избранном, то возвращаем 400
+                return Response(
+                    status=status.HTTP_400_BAD_REQUEST,
+                    data={"errors": "Рецепта нет в избранном"},
+                )
+
+    @action(methods=["post", "delete"], detail=True)
     def shopping_cart(self, request, pk=None):
         recipe = self.get_object()
         if request.method == "POST":
@@ -80,33 +109,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     data={"errors": "Рецепта нет в корзине"},
                 )
 
-    @action(methods=["post", "delete"], detail=True)
-    def favorite(self, request, pk=None):
-        recipe = self.get_object()
-        if request.method == "POST":
-            recipe_in_favorite, created = Favorite.objects.get_or_create(
-                user=request.user, recipe=recipe
-            )
-            if created:  # если рецепта нет в избранном, то добавляем и возвращаем 201
-                recipe_in_favorite.save()
-                return Response(
-                    status=status.HTTP_201_CREATED,
-                    data=RecipeShortSerializer(recipe).data,
-                )
-            else:  # если рецепт уже в избранном, то возвращаем 400
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST,
-                    data={"errors": "Рецепт уже в избранном"},
-                )
-        elif request.method == "DELETE":
-            if Favorite.objects.filter(user=request.user, recipe=recipe).exists():
-                Favorite.objects.filter(user=request.user, recipe=recipe).delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            else:  # если рецепта нет в избранном, то возвращаем 400
-                return Response(
-                    status=status.HTTP_400_BAD_REQUEST,
-                    data={"errors": "Рецепта нет в избранном"},
-                )
+    @action(methods=["get"], detail=False)
+    def download_shopping_cart(self, request, pk=None):
+        return download_shopping_cart_pdf(request)
 
 
 def redirect_to_recipe(request, urn):
