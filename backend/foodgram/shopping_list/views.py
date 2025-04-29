@@ -2,6 +2,8 @@ import io
 from datetime import datetime
 from django.http import FileResponse
 from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -15,63 +17,65 @@ def get_products(request) -> QuerySet:
     user = request.user
     products = Component.objects.filter(
         recipe__shopping_cart__user=user
-    ).values(fields[0]).annotate(
-        amount=Sum("amount")
+    ).values(fields[0]).annotate(  # продукты (ингредиенты) с одинаковым названием группируем
+        amount=Sum("amount")  # и суммируем их количество (общее количество ингредиента)
     ).values_list(*fields).order_by(fields[0])
-    print(products)
-    print(type(products))
     return products
 
 
 def download_shopping_cart_pdf(request) -> FileResponse:
-    # Буфер в памяти
     buffer = io.BytesIO()
-
-    # Настройка канвы
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
 
-    # Регистрируем шрифт, поддерживающий кириллицу
-    pdfmetrics.registerFont(TTFont('DejaVuSans', 'static/fonts/DejaVuSans.ttf'))
-    pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', 'static/fonts/DejaVuSans-Bold.ttf'))
+    # регистрируем шрифты с поддержкой кириллицы
+    pdfmetrics.registerFont(TTFont('DejaVu', 'static/fonts/DejaVuSans.ttf'))
+    pdfmetrics.registerFont(TTFont('DejaVu-Bold', 'static/fonts/DejaVuSans-Bold.ttf'))
 
-    # Получаем продукты
     products = get_products(request)
 
-    # Начальная позиция на странице
-    x = 30
-    y = height - 50
-    line_height = 25
+    # начальная вертикальная позиция (с отступом сверху)
+    y = height - 40 * mm
+    x = 20 * mm
+    line_height = 10 * mm
+    bottom_margin = 20 * mm
 
-    # Устанавливаем шрифт
-    p.setFont("DejaVuSans", 18)
+    # 1) Заголовок
+    p.setFont("DejaVu-Bold", 16)
+    title = f"Список покупок от {datetime.now():%d.%m.%Y (%H:%M)}"
+    # рисуем фон заголовка: поднимаем y и рисуем прямоугольник высотой line_height*2
+    header_height = line_height * 1
+    p.setFillColor(colors.burlywood)
+    p.rect(x, y - header_height + 5, width - 2 * x, header_height, fill=True, stroke=False)
+    # рисуем текст поверх
+    p.setFillColor(colors.black)
+    p.drawString(x + 2, y - line_height / 2, title)
+    y -= header_height
 
-    # Дата создания списка
-    today = datetime.now().strftime("%d.%m.%Y")
-    time = datetime.now().strftime("%H:%M")
-    p.drawString(x, y, f"Список покупок от {today} ({time})")
-    y -= line_height
-    p.drawString(x, y, f"Количество продуктов в списке: {len(products)}")
-    y -= 2 * line_height  # Пропуск строки
+    # 2) Кол-во позиций
+    p.setFont("DejaVu", 12)
+    count_text = f"Всего позиций: {len(products)}"
+    p.drawString(x + 2, y - line_height / 2, count_text)
+    y -= line_height * 1.5  # дополнительный отступ
 
-    # Проходимся по всем продуктам и пишем их
-    for i, (name, amount, unit) in enumerate(products):
-        line = f"{i + 1}.  {name} - {amount} {unit}"
-        p.drawString(x, y, line)
+    # 3) Список позиций: зебра-полосы
+    for idx, (name, amount, unit) in enumerate(products, start=1):
+        # если не хватает места — новая страница
+        if y < bottom_margin:
+            p.showPage()
+            y = height - 40 * mm
+        # фон строки
+        bg = colors.whitesmoke if idx % 2 else colors.lightgrey
+        p.setFillColor(bg)
+        p.rect(x, y - line_height + 3, width - 2 * x, line_height, fill=True, stroke=False)
+        # текст поверх
+        p.setFillColor(colors.black)
+        p.setFont("DejaVu", 12)
+        p.drawString(x + 4, y - line_height / 2, f"{idx}. {name} — {amount} {unit}")
         y -= line_height
 
-        # Если строка не помещается, создаем новую страницу
-        if y < 50:
-            p.showPage()
-            p.setFont("DejaVuSans", 14)
-            y = height - 50
-            p.drawString(x, y, f"Продолжение списка от {today}")
-            y -= 2 * line_height
-
-    # Завершить страницу
     p.showPage()
     p.save()
 
-    # Вернуть как ответ
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="shopping_cart.pdf")
