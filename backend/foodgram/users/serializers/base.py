@@ -1,4 +1,5 @@
 # users/serializers.py
+import re
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -22,6 +23,13 @@ class BaseUserSerializer(serializers.ModelSerializer):
         model = User
         fields: tuple[str, ...] = ('email', 'username',
                                    'first_name', 'last_name')
+
+    def validate_username(self, value):
+        if re.match(r'^[\w.@+-]+\Z', value) is None:
+            raise serializers.ValidationError(
+                'Имя пользователя содержит недопустимые символы'
+            )
+        return value
 
 
 class UserWithAvatarSerializer(BaseUserSerializer, AvatarSerializer):
