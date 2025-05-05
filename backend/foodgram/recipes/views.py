@@ -4,11 +4,11 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .filters import RecipeFilter, NameSearchFilter
-from .pagination import LimitPageNumberPagination
+from .permissions import IsAuthor
+from utils.pagination import LimitPageNumberPagination
 from .models import Ingredient, Recipe, ShoppingCart, Favorite
 from .serializers.recipe import IngredientSerializer, RecipeSerializer
 from .serializers.shared import RecipeShortSerializer
@@ -16,12 +16,12 @@ from utils.gen_utils import generate_unique_urn
 from shopping_list.views import download_shopping_cart_pdf
 
 
-class IngredientViewSet(viewsets.ModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend, NameSearchFilter,
                        filters.OrderingFilter)
-    search_fields = ("name",)
+    search_fields = ("^name",)
     ordering = ("id",)
     pagination_class = None  # Отключаем пагинацию для ингредиентов
 
@@ -41,6 +41,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action in ("list", "retrieve", "get_link"):
             # GET+POST /api/users/ и GET /api/users/{id}/ — доступны всем
             return (AllowAny(),)
+        if self.action in ("update", "partial_update", "destroy"):
+            # PATCH /api/users/{id}/ и DELETE /api/users/{id}/ — только для автора
+            return (IsAuthor(),)
         # остальные — только для авторизованных
         return (IsAuthenticated(),)
 

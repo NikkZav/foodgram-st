@@ -13,13 +13,17 @@ class AvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('avatar',)
+        fields: tuple[str, ...] = ('avatar',)
 
 
 class BaseUserSerializer(serializers.ModelSerializer):
-    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User
         fields: tuple[str, ...] = ('email', 'username',
-                                   'first_name', 'last_name', 'avatar')
+                                   'first_name', 'last_name')
+
+
+class UserWithAvatarSerializer(BaseUserSerializer, AvatarSerializer):
+    class Meta(BaseUserSerializer.Meta, AvatarSerializer.Meta):
+        fields = BaseUserSerializer.Meta.fields + AvatarSerializer.Meta.fields

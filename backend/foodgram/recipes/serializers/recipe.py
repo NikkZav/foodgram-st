@@ -1,4 +1,5 @@
 # recipes/serializers.py
+from typing import Required
 from rest_framework import serializers
 from recipes.models import Ingredient, Recipe, Component
 from users.serializers.user import AuthorSerializer
@@ -23,6 +24,13 @@ class ComponentSerializer(serializers.ModelSerializer):
         source='ingredient.measurement_unit', read_only=True
     )
 
+    def validate_measurement_unit(self, value):
+        if value < 1:
+            raise serializers.ValidationError(
+                'Количество ингредиента должно быть больше 0'
+            )
+        return value
+
     class Meta:
         model = Component
         fields = ('id', 'name', 'measurement_unit', 'amount')
@@ -30,9 +38,9 @@ class ComponentSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    ingredients = ComponentSerializer(source='components', many=True)
+    ingredients = ComponentSerializer(source='components', many=True, required=True)
     author = AuthorSerializer(read_only=True)
-    image = Base64ImageField(required=False, allow_null=True)
+    image = Base64ImageField(required=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -53,6 +61,38 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
         return obj.shopping_cart.filter(user=user).exists()
+
+    def validate_cooking_time(self, value):
+        if value < 1:
+            raise serializers.ValidationError(
+                'Время приготовления должно быть больше 0'
+            )
+        return value
+
+    def validate_ingredients(self, value):
+        if not value:
+            raise serializers.ValidationError(
+                'Нужно указать ингредиенты'
+            )
+        ingredients_list = [(component['ingredient'], component['amount'])
+                            for component in value]
+        if len(ingredients_list) != len(set(ingredients_list)):
+            raise serializers.ValidationError(
+                'Ингредиенты должны быть уникальными'
+            )
+        if any(ingredient['amount'] < 1 for ingredient in value):
+            raise serializers.ValidationError(
+                'Количество ингредиентов должно быть больше 0'
+            )
+        return value
+
+    def validate(self, data):
+        # Проверяем, что это PATCH-запрос и поле ingredients отсутствует
+        if self.context['request'].method == 'PATCH' and 'components' not in data:
+            raise serializers.ValidationError({
+                'ingredients': 'Поле ingredients обязательно для обновления'
+            })
+        return super().validate(data)
 
     def create(self, validated_data):
         components = validated_data.pop('components')

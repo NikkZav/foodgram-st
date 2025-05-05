@@ -4,18 +4,18 @@ from django.contrib.auth import get_user_model
 
 from users.models import Subscription
 from recipes.serializers.shared import RecipeShortSerializer
-from users.serializers.base import BaseUserSerializer
+from users.serializers.base import BaseUserSerializer, UserWithAvatarSerializer
 
 
 User = get_user_model()
 
 
-class AuthorSerializer(BaseUserSerializer):
+class AuthorSerializer(UserWithAvatarSerializer):
     id = serializers.IntegerField(read_only=True)
     is_subscribed = serializers.SerializerMethodField()
 
-    class Meta(BaseUserSerializer.Meta):
-        fields = BaseUserSerializer.Meta.fields + ('id', 'is_subscribed')
+    class Meta(UserWithAvatarSerializer.Meta):
+        fields = UserWithAvatarSerializer.Meta.fields + ('id', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')

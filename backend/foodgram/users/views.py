@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import get_user_model
 from djoser.views import UserViewSet
 from djoser.serializers import SetPasswordSerializer
+from utils.pagination import LimitPageNumberPagination
 
 from .serializers.base import (
     BaseUserSerializer, AvatarSerializer
@@ -20,6 +21,7 @@ User = get_user_model()
 
 
 class CustomUserViewSet(UserViewSet):
+    pagination_class = LimitPageNumberPagination
 
     def get_queryset(self):
         if self.action == 'me':
