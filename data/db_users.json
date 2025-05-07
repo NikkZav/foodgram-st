@@ -1,0 +1,97 @@
+[
+    {
+        "model": "users.foodgramuser",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$1000000$Fo01BlcI34SK2O4FIsh8k8$2BWdMjWfxbj9+gfsG7V8FX1MI4cvl59I9zeT4Tgze4A=",
+            "last_login": "2025-05-06T09:38:02.000Z",
+            "is_superuser": true,
+            "is_staff": true,
+            "is_active": true,
+            "date_joined": "2025-05-05T22:18:03Z",
+            "email": "nik.zav.2004.nz@gmail.com",
+            "username": "nikza",
+            "first_name": "Админ",
+            "last_name": "Админович",
+            "avatar": "users/avatars/temp_VM0FV3a.jpeg",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.foodgramuser",
+        "pk": 5,
+        "fields": {
+            "password": "pbkdf2_sha256$1000000$ChkL9Qfu2qoF69JR17PKkb$xRn+V/4qNYzGv3Jd5YzWkc6vjh1DiOLCOJcIOIOgc/0=",
+            "last_login": "2025-05-05T22:32:31Z",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-05-05T22:27:13Z",
+            "email": "alex@gmail.com",
+            "username": "alex",
+            "first_name": "Лёша",
+            "last_name": "Дуляр",
+            "avatar": "users/avatars/temp.jpeg",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.foodgramuser",
+        "pk": 7,
+        "fields": {
+            "password": "pbkdf2_sha256$1000000$FzY1JIgxV5OoO8SifA34KU$P/z3wGZ00AqNXgaCrliDIbqx3iYSaF4jx25ULisIT38=",
+            "last_login": "2025-05-06T09:46:26.594Z",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-05-05T23:03:00.167Z",
+            "email": "vivanov@yandex.ru",
+            "username": "vasya.ivanov",
+            "first_name": "Вася",
+            "last_name": "Иванов",
+            "avatar": "users/avatars/temp_WAH8nZN.jpeg",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.foodgramuser",
+        "pk": 8,
+        "fields": {
+            "password": "pbkdf2_sha256$1000000$kgwmhSoW23xt4TGLFjyZAj$AgAli8OLMqZTD2ErMLmo32jscZEruXTXcOtpamxPM3Q=",
+            "last_login": "2025-05-05T23:03:02.728Z",
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-05-05T23:03:00.766Z",
+            "email": "second_user@email.org",
+            "username": "second-user",
+            "first_name": "Андрей",
+            "last_name": "Макаревский",
+            "avatar": "",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.foodgramuser",
+        "pk": 9,
+        "fields": {
+            "password": "pbkdf2_sha256$1000000$2y4dDmyhA1Q1b4weDuFbPg$4YYc7NUvk4D992/tyQK9fML+ka5A0gyM9Ibd1UVJDI8=",
+            "last_login": null,
+            "is_superuser": false,
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2025-05-05T23:03:01.265Z",
+            "email": "third-user@user.ru",
+            "username": "third-user-username",
+            "first_name": "Гордон",
+            "last_name": "Рамзиков",
+            "avatar": "",
+            "groups": [],
+            "user_permissions": []
+        }
+    }
+]
