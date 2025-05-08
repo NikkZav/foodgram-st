@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Recipe, Ingredient, Component
+
+from .models import Component, Ingredient, Recipe
 
 
 class ComponentInline(admin.TabularInline):  # или admin.StackedInline

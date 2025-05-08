@@ -1,20 +1,16 @@
+from django.contrib.auth import get_user_model
+from djoser.serializers import SetPasswordSerializer
+from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth import get_user_model
-from djoser.views import UserViewSet
-from djoser.serializers import SetPasswordSerializer
+from rest_framework.response import Response
 from utils.pagination import LimitPageNumberPagination
 
-from .serializers.base import BaseUserSerializer, AvatarSerializer
-from .serializers.user import (
-    AuthorSerializer,
-    UserCreateSerializer,
-    UserWithRecipesSerializer,
-)
 from .models import Subscription
-
+from .serializers.base import AvatarSerializer, BaseUserSerializer
+from .serializers.user import (AuthorSerializer, UserCreateSerializer,
+                               UserWithRecipesSerializer)
 
 User = get_user_model()
 
@@ -76,14 +72,13 @@ class CustomUserViewSet(UserViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     data={"errors": "Вы уже подписаны на этого пользователя"},
                 )
-            Subscription.objects.create(
-                user=request.user, subscribed_to=user_to_subscribe
-            )
+            Subscription.objects.create(user=request.user, subscribed_to=user_to_subscribe)
             serialize_user_to_subscribe = UserWithRecipesSerializer(
                 user_to_subscribe, context={"request": request}
             )
             return Response(
-                status=status.HTTP_201_CREATED, data=serialize_user_to_subscribe.data
+                status=status.HTTP_201_CREATED,
+                data=serialize_user_to_subscribe.data,
             )
         elif request.method == "DELETE":
             if not Subscription.objects.filter(
@@ -93,7 +88,5 @@ class CustomUserViewSet(UserViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     data={"errors": "Вы не подписаны на этого пользователя"},
                 )
-            Subscription.objects.filter(
-                user=request.user, subscribed_to=user_to_subscribe
-            ).delete()
+            Subscription.objects.filter(user=request.user, subscribed_to=user_to_subscribe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

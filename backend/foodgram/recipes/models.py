@@ -1,6 +1,5 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-
+from django.db import models
 
 User = get_user_model()
 
@@ -15,15 +14,19 @@ class Recipe(models.Model):
     )
     name = models.CharField(max_length=200, verbose_name="Название")
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="recipes", verbose_name="Автор"
+        User,
+        on_delete=models.CASCADE,
+        related_name="recipes",
+        verbose_name="Автор",
     )
     image = models.ImageField(
-        upload_to="recipes/images/", null=True, blank=True, verbose_name="Изображение"
+        upload_to="recipes/images/",
+        null=True,
+        blank=True,
+        verbose_name="Изображение",
     )
     text = models.TextField(verbose_name="Описание")
-    cooking_time = models.PositiveSmallIntegerField(
-        verbose_name="Время приготовления (в минутах)"
-    )
+    cooking_time = models.PositiveSmallIntegerField(verbose_name="Время приготовления (в минутах)")
     ingredients = models.ManyToManyField(
         "Ingredient", through="Component", verbose_name="Ингредиенты"
     )
@@ -89,9 +92,7 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["user", "recipe"], name="unique_favorite")
-        ]
+        constraints = [models.UniqueConstraint(fields=["user", "recipe"], name="unique_favorite")]
         verbose_name = "Избранное"
         verbose_name_plural = "Избранное"
 
@@ -112,9 +113,7 @@ class ShoppingCart(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=["user", "recipe"], name="unique_shopping_cart"
-            )
+            models.UniqueConstraint(fields=["user", "recipe"], name="unique_shopping_cart")
         ]
         verbose_name = "Список покупок"
         verbose_name_plural = "Списки покупок"

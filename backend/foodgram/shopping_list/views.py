@@ -1,15 +1,16 @@
 import io
 from datetime import datetime
-from django.http import FileResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.units import mm
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from recipes.models import Component
+
 from django.db.models import Sum
 from django.db.models.query import QuerySet
+from django.http import FileResponse
+from recipes.models import Component
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
 
 def get_products(request) -> QuerySet:
@@ -19,9 +20,7 @@ def get_products(request) -> QuerySet:
         Component.objects.filter(recipe__shopping_cart__user=user)
         .values(fields[0])
         .annotate(  # продукты (ингредиенты) с одинаковым названием группируем
-            amount=Sum(
-                "amount"
-            )  # и суммируем их количество (общее количество ингредиента)
+            amount=Sum("amount")  # и суммируем их количество (общее количество ингредиента)
         )
         .values_list(*fields)
         .order_by(fields[0])
@@ -53,7 +52,12 @@ def download_shopping_cart_pdf(request) -> FileResponse:
     header_height = line_height * 1
     p.setFillColor(colors.burlywood)
     p.rect(
-        x, y - header_height + 5, width - 2 * x, header_height, fill=True, stroke=False
+        x,
+        y - header_height + 5,
+        width - 2 * x,
+        header_height,
+        fill=True,
+        stroke=False,
     )
     # рисуем текст поверх
     p.setFillColor(colors.black)
@@ -76,7 +80,12 @@ def download_shopping_cart_pdf(request) -> FileResponse:
         bg = colors.whitesmoke if idx % 2 else colors.lightgrey
         p.setFillColor(bg)
         p.rect(
-            x, y - line_height + 3, width - 2 * x, line_height, fill=True, stroke=False
+            x,
+            y - line_height + 3,
+            width - 2 * x,
+            line_height,
+            fill=True,
+            stroke=False,
         )
         # текст поверх
         p.setFillColor(colors.black)

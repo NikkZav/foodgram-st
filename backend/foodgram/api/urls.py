@@ -1,10 +1,9 @@
 #  backend/foodgram/api/urls.py
-from django.urls import path, include
+from django.urls import include, path
 from djoser.views import TokenCreateView, TokenDestroyView
-from rest_framework.routers import DefaultRouter
 from recipes.views import IngredientViewSet, RecipeViewSet
+from rest_framework.routers import DefaultRouter
 from users.views import CustomUserViewSet
-
 
 router_v1 = DefaultRouter()
 router_v1.register("ingredients", IngredientViewSet, basename="ingredients")

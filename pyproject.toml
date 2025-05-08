@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 100
+exclude = [
+    "tests",
+    "*/migrations",
+    "data",
+    "venv",
+    "env",
+    "docs",
+    "frontend",
+    "infra"
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+per-file-ignores = { "*/settings.py" = ["E501"] }
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"

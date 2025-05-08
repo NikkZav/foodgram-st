@@ -1,11 +1,9 @@
 # users/serializers.py
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
-from users.models import Subscription
 from recipes.serializers.shared import RecipeShortSerializer
+from rest_framework import serializers
+from users.models import Subscription
 from users.serializers.base import BaseUserSerializer, UserWithAvatarSerializer
-
 
 User = get_user_model()
 
@@ -21,9 +19,7 @@ class AuthorSerializer(UserWithAvatarSerializer):
         request = self.context.get("request")
         if not request or request.user.is_anonymous:
             return False
-        return Subscription.objects.filter(
-            user=request.user, subscribed_to=obj
-        ).exists()
+        return Subscription.objects.filter(user=request.user, subscribed_to=obj).exists()
 
 
 class UserCreateSerializer(BaseUserSerializer):
@@ -55,7 +51,5 @@ class UserWithRecipesSerializer(AuthorSerializer):
     def get_recipes(self, obj):
         recipes_limit = self.context.get("request").query_params.get("recipes_limit")
         if recipes_limit is not None and recipes_limit.isdigit():
-            return RecipeShortSerializer(
-                obj.recipes.all()[: int(recipes_limit)], many=True
-            ).data
+            return RecipeShortSerializer(obj.recipes.all()[: int(recipes_limit)], many=True).data
         return RecipeShortSerializer(obj.recipes.all(), many=True).data
