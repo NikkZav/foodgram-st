@@ -15,11 +15,17 @@ from django.db.models.query import QuerySet
 def get_products(request) -> QuerySet:
     fields = ["ingredient__name", "amount", "ingredient__measurement_unit"]
     user = request.user
-    products = Component.objects.filter(
-        recipe__shopping_cart__user=user
-    ).values(fields[0]).annotate(  # продукты (ингредиенты) с одинаковым названием группируем
-        amount=Sum("amount")  # и суммируем их количество (общее количество ингредиента)
-    ).values_list(*fields).order_by(fields[0])
+    products = (
+        Component.objects.filter(recipe__shopping_cart__user=user)
+        .values(fields[0])
+        .annotate(  # продукты (ингредиенты) с одинаковым названием группируем
+            amount=Sum(
+                "amount"
+            )  # и суммируем их количество (общее количество ингредиента)
+        )
+        .values_list(*fields)
+        .order_by(fields[0])
+    )
     return products
 
 
@@ -29,8 +35,8 @@ def download_shopping_cart_pdf(request) -> FileResponse:
     width, height = A4
 
     # регистрируем шрифты с поддержкой кириллицы
-    pdfmetrics.registerFont(TTFont('DejaVu', 'static/fonts/DejaVuSans.ttf'))
-    pdfmetrics.registerFont(TTFont('DejaVu-Bold', 'static/fonts/DejaVuSans-Bold.ttf'))
+    pdfmetrics.registerFont(TTFont("DejaVu", "static/fonts/DejaVuSans.ttf"))
+    pdfmetrics.registerFont(TTFont("DejaVu-Bold", "static/fonts/DejaVuSans-Bold.ttf"))
 
     products = get_products(request)
 
@@ -46,7 +52,9 @@ def download_shopping_cart_pdf(request) -> FileResponse:
     # рисуем фон заголовка: поднимаем y и рисуем прямоугольник высотой line_height*2
     header_height = line_height * 1
     p.setFillColor(colors.burlywood)
-    p.rect(x, y - header_height + 5, width - 2 * x, header_height, fill=True, stroke=False)
+    p.rect(
+        x, y - header_height + 5, width - 2 * x, header_height, fill=True, stroke=False
+    )
     # рисуем текст поверх
     p.setFillColor(colors.black)
     p.drawString(x + 2, y - line_height / 2, title)
@@ -67,7 +75,9 @@ def download_shopping_cart_pdf(request) -> FileResponse:
         # фон строки
         bg = colors.whitesmoke if idx % 2 else colors.lightgrey
         p.setFillColor(bg)
-        p.rect(x, y - line_height + 3, width - 2 * x, line_height, fill=True, stroke=False)
+        p.rect(
+            x, y - line_height + 3, width - 2 * x, line_height, fill=True, stroke=False
+        )
         # текст поверх
         p.setFillColor(colors.black)
         p.setFont("DejaVu", 12)

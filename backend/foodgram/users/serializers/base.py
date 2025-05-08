@@ -14,20 +14,18 @@ class AvatarSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields: tuple[str, ...] = ('avatar',)
+        fields: tuple[str, ...] = ("avatar",)
 
 
 class BaseUserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
-        fields: tuple[str, ...] = ('email', 'username',
-                                   'first_name', 'last_name')
+        fields: tuple[str, ...] = ("email", "username", "first_name", "last_name")
 
     def validate_username(self, value):
-        if re.match(r'^[\w.@+-]+\Z', value) is None:
+        if re.match(r"^[\w.@+-]+\Z", value) is None:
             raise serializers.ValidationError(
-                'Имя пользователя содержит недопустимые символы'
+                "Имя пользователя содержит недопустимые символы"
             )
         return value
 

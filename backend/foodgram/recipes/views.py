@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404, redirect
-from django.db.models.functions import Lower
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,8 +18,7 @@ from shopping_list.views import download_shopping_cart_pdf
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (DjangoFilterBackend, NameSearchFilter,
-                       filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, NameSearchFilter, filters.OrderingFilter)
     search_fields = ("^name",)
     ordering = ("id",)
     pagination_class = None  # Отключаем пагинацию для ингредиентов
