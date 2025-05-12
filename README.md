@@ -35,7 +35,7 @@
 
 ## Требования для запуска
 
-Проект запускается на **Linux**-системе (рекомендуется Ubuntu 20.04 или выше) с установленными следующими инструментами:
+Для запуска проекта необходимо установить следующие инструменты:
 
 - **Docker** и **Docker Compose**:
   - Для контейнеризации и оркестрации сервисов (backend, frontend, nginx, PostgreSQL).
@@ -117,10 +117,10 @@ make setup-without-data
 
 ### 4. Доступ к приложению
 После запуска:
-- Веб-интерфейс: `http://localhost/`.
-- API: `http://localhost/api/`.
-- Документация API: `http://localhost/api/docs/`.
-- Админ-панель: `http://localhost/admin/`. Чтобы войти:
+- Веб-интерфейс: [`http://localhost/`](http://localhost/).
+- API: [`http://localhost/api/`](http://localhost/api/).
+- Документация API: [`http://localhost/api/docs/`](http://localhost/api/docs/).
+- Админ-панель: [`http://localhost/admin/`](http://localhost/admin/). Чтобы войти:
   - Либо создайте суперпользователя с помощью `make createsuperuser`, если **_запуск без предзагруженных данных_**
   - Либо используйте уже имеющегося Админ-пользователя из фикстур, если **_запуск с предзагруженными данными_**
 
@@ -147,6 +147,14 @@ make setup-without-data
   ```bash
   make dumpdata
   ```
+- Загрузить данные из фикстур в базу:
+  ```bash
+  make load-fixtures
+  ```
+- Загрузить только продукты:
+  ```bash
+  make load-ingredients
+  ```
 
 ## CI/CD
 Проект включает GitHub Actions (`.github/workflows/main.yml`):
@@ -160,3 +168,8 @@ make setup-without-data
 - **Инфраструктура**: Docker, Docker Compose, Nginx.
 - **CI/CD**: GitHub Actions.
 - **Линтеры**: ruff, pycodestyle.
+
+## Автор и контакты
+- **Автор**: Никита Завьялов Сергеевич.
+- **Telegram**: [@niki_zav](https://t.me/niki_zav)
+- **Email**: [nikitazavyalov.it@gmail.com](mailto:nikitazavyalov.it@gmail.com)

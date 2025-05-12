@@ -17,19 +17,19 @@ class RecipeFilter(FilterSet):
         model = Recipe
         fields = ("is_favorited", "is_in_shopping_cart", "author")
 
-    def filter_is_favorited(self, queryset, name, value):
+    def filter_is_favorited(self, recipes, name, value):
         if self.request.user.is_anonymous:
-            return queryset.none()
+            return recipes.none()
         if value:
-            return queryset.filter(favorites__user=self.request.user)
-        return queryset
+            return recipes.filter(favorites__user=self.request.user)
+        return recipes
 
-    def filter_is_in_cart(self, queryset, name, value):
+    def filter_is_in_cart(self, recipes, name, value):
         if self.request.user.is_anonymous:
-            return queryset.none()
+            return recipes.none()
         if value:
-            return queryset.filter(shopping_cart__user=self.request.user)
-        return queryset
+            return recipes.filter(shopping_cart__user=self.request.user)
+        return recipes
 
 
 class NameSearchFilter(SearchFilter):

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -112,6 +113,12 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     "LOGIN_FIELD": "email",
+    'SERIALIZERS': {
+        'user_create': 'djoser.serializers.UserCreateSerializer',  # Создание пользователя
+        'user': 'api.serializers.users.FoodgramUserSerializer',    # Отображение пользователей
+        'current_user': 'api.serializers.users.FoodgramUserSerializer',  # Текущий пользователь
+        'set_password': 'djoser.serializers.SetPasswordSerializer',  # Смена пароля
+    },
 }
 
 

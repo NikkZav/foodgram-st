@@ -19,10 +19,3 @@ class Base64ImageField(serializers.ImageField):
             data = ContentFile(base64.b64decode(imgstr), name="temp." + ext)
 
         return super().to_internal_value(data)
-
-
-def set_if_changed(obj, attr, value):
-    if getattr(obj, attr) != value:
-        setattr(obj, attr, value)
-        return True
-    return False

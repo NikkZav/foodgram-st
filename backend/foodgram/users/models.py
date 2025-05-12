@@ -1,6 +1,7 @@
 # users/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import RegexValidator
 
 
 class FoodgramUser(AbstractUser):
@@ -12,30 +13,31 @@ class FoodgramUser(AbstractUser):
         unique=True,
     )
     username = models.CharField(
-        "Имя пользователя",
+        "Никнейм пользователя",
         max_length=150,
         null=False,
         blank=False,
         unique=True,
+        validators=[RegexValidator(regex=r"^[\w.@+-]+\Z")]
     )
     first_name = models.CharField("Имя", max_length=150, null=False, blank=False)
     last_name = models.CharField("Фамилия", max_length=150, null=False, blank=False)
     avatar = models.ImageField("Аватар", upload_to="users/avatars/", null=True, blank=True)
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
 
 
 class Subscription(models.Model):
     user = models.ForeignKey(
         FoodgramUser,
         on_delete=models.CASCADE,
-        related_name="follower",
+        related_name="subscriptions",
         verbose_name="Пользователь",
     )
     subscribed_to = models.ForeignKey(
         FoodgramUser,
         on_delete=models.CASCADE,
-        related_name="following",
+        related_name="followers",
         verbose_name="Подписан на",
     )
 
