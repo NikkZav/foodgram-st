@@ -28,7 +28,7 @@ class RecipeFilter(FilterSet):
         if self.request.user.is_anonymous:
             return recipes.none()
         if value:
-            return recipes.filter(shopping_cart__user=self.request.user)
+            return recipes.filter(shopping_carts__user=self.request.user)
         return recipes
 
 

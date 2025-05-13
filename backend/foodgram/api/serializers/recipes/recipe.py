@@ -56,7 +56,7 @@ class RecipeReadOnlySerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         if user.is_anonymous:
             return False
-        return recipe.shopping_cart.filter(user=user).exists()
+        return recipe.shopping_carts.filter(user=user).exists()
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -93,29 +93,29 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def create_components(self, recipe, components):
         """Создание компонентов рецепта."""
-        Component.objects.bulk_create([
+        Component.objects.bulk_create(
             Component(
                 recipe=recipe,
                 ingredient=component["ingredient"],
                 amount=component["amount"]
             ) for component in components
-        ])
+        )
 
     def create(self, validated_data):
-        components = validated_data.pop("components")
+        # Чтобы не передать components в super().create
+        components = validated_data.pop("components")  # Нужен именно pop !
         recipe = super().create(validated_data)
         self.create_components(recipe, components)
         return recipe
 
     def update(self, recipe, validated_data):
-        components = validated_data.pop("components", None)
+        # Чтобы не передать components в super().update
+        components = validated_data.pop("components")  # Нужен именно pop !
+        recipe.components.all().delete()
+        self.create_components(recipe, components)
         recipe = super().update(recipe, validated_data)
-        if components is not None:
-            recipe.components.all().delete()
-            self.create_components(recipe, components)
         return recipe
 
     def to_representation(self, instance):
         """Возвращает данные в формате RecipeReadSerializer."""
-        read_serializer = RecipeReadOnlySerializer(instance, context=self.context)
-        return read_serializer.data
+        return RecipeReadOnlySerializer(instance, context=self.context).data

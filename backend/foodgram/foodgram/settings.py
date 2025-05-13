@@ -45,10 +45,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "foodgram.urls"
 
+TEMPLATES_DIR = BASE_DIR / 'templates'
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [TEMPLATES_DIR],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -66,19 +68,24 @@ WSGI_APPLICATION = "foodgram.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         # Меняем настройку Django: теперь для работы будет использоваться
+#         # бэкенд postgresql
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.getenv("POSTGRES_DB", "django"),
+#         "USER": os.getenv("POSTGRES_USER", "django"),
+#         "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
+#         "HOST": os.getenv("DB_HOST", ""),
+#         "PORT": os.getenv("DB_PORT", 5432),
+#     }
+# }
 DATABASES = {
     "default": {
-        # Меняем настройку Django: теперь для работы будет использоваться
-        # бэкенд postgresql
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "django"),
-        "USER": os.getenv("POSTGRES_USER", "django"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", ""),
-        "PORT": os.getenv("DB_PORT", 5432),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -118,6 +125,11 @@ DJOSER = {
         'user': 'api.serializers.users.FoodgramUserSerializer',    # Отображение пользователей
         'current_user': 'api.serializers.users.FoodgramUserSerializer',  # Текущий пользователь
         'set_password': 'djoser.serializers.SetPasswordSerializer',  # Смена пароля
+    },
+    "HIDE_USERS": False,  # Отключаем ограничение доступа для list/retrieve
+    'PERMISSIONS': {
+        'user': ['api.permissions.CurrentUserOrAdminOrAnonymousReadOnly'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
     },
 }
 

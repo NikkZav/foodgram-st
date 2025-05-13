@@ -13,7 +13,7 @@ class FoodgramUser(AbstractUser):
         unique=True,
     )
     username = models.CharField(
-        "Никнейм пользователя",
+        "Никнейм",
         max_length=150,
         null=False,
         blank=False,
@@ -37,7 +37,7 @@ class Subscription(models.Model):
     subscribed_to = models.ForeignKey(
         FoodgramUser,
         on_delete=models.CASCADE,
-        related_name="followers",
+        related_name="authors",
         verbose_name="Подписан на",
     )
 

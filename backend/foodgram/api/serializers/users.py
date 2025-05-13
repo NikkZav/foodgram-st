@@ -8,6 +8,9 @@ from .image import Base64ImageField
 User = get_user_model()
 
 
+RECIPES_LIMIT = 10**10
+
+
 class FoodgramUserSerializer(UserSerializer):
     """Сериализатор для пользователей с аватаром и подписками."""
     avatar = Base64ImageField(required=False, allow_null=True)
@@ -40,12 +43,12 @@ class UserWithRecipesSerializer(FoodgramUserSerializer):
     def get_recipes(self, user):
         """Возвращает список рецептов с учётом параметра recipes_limit."""
         request = self.context.get('request')
-        recipes_limit = request.query_params.get('recipes_limit', 10**10)
+        recipes_limit = request.query_params.get('recipes_limit', RECIPES_LIMIT)
         try:
             limit = int(recipes_limit)
-            return RecipeShortSerializer(user.recipes.all()[:limit], many=True).data
         except ValueError:
-            return RecipeShortSerializer(user.recipes.all(), many=True).data
+            limit = RECIPES_LIMIT
+        return RecipeShortSerializer(user.recipes.all()[:limit], many=True).data
 
 
 class AvatarSerializer(serializers.ModelSerializer):

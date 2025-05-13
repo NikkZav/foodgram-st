@@ -25,56 +25,42 @@ class SubscriptionAdmin(admin.TabularInline):
     extra = 1
 
 
+# Базовый класс для фильтров
+class BaseRelationFilter(SimpleListFilter):
+    relation_field = None  # Задаётся в наследниках
+    LOOKUP_CHOICES = (
+        ("yes", "Да"),
+        ("no", "Нет"),
+    )
+
+    def lookups(self, request, model_admin):
+        return self.LOOKUP_CHOICES
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(**{f"{self.relation_field}__isnull": False}).distinct()
+        if self.value() == "no":
+            return queryset.filter(**{f"{self.relation_field}__isnull": True})
+        return queryset
+
+
 # Кастомные фильтры
-class HasRecipesFilter(SimpleListFilter):
+class HasRecipesFilter(BaseRelationFilter):
     title = "Есть рецепты"
     parameter_name = "has_recipes"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("yes", "Да"),
-            ("no", "Нет"),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == "yes":
-            return queryset.filter(recipes__isnull=False).distinct()
-        if self.value() == "no":
-            return queryset.filter(recipes__isnull=True)
+    relation_field = "recipes"
 
 
-class HasSubscriptionsFilter(SimpleListFilter):
+class HasSubscriptionsFilter(BaseRelationFilter):
     title = "Есть подписки"
     parameter_name = "has_subscriptions"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("yes", "Да"),
-            ("no", "Нет"),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == "yes":
-            return queryset.filter(subscriptions__isnull=False).distinct()
-        if self.value() == "no":
-            return queryset.filter(subscriptions__isnull=True)
+    relation_field = "subscriptions"
 
 
-class HasFollowersFilter(SimpleListFilter):
+class HasFollowersFilter(BaseRelationFilter):
     title = "Есть подписчики"
     parameter_name = "has_followers"
-
-    def lookups(self, request, model_admin):
-        return (
-            ("yes", "Да"),
-            ("no", "Нет"),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == "yes":
-            return queryset.filter(followers__isnull=False).distinct()
-        if self.value() == "no":
-            return queryset.filter(followers__isnull=True)
+    relation_field = "authors"
 
 
 # Регистрация админ-класса через декоратор
@@ -95,26 +81,23 @@ class FoodgramUserAdmin(BaseUserAdmin):
     inlines = [ShoppingCartAdmin, FavoriteAdmin, SubscriptionAdmin]
     fieldsets = BaseUserAdmin.fieldsets + (("Дополнительно", {"fields": ("avatar",)}),)
 
+    @admin.display(description="ФИО")
     def full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
 
+    @admin.display(description="Аватар")
     @mark_safe
     def avatar_image(self, obj):
-        if obj.avatar:
-            return f'<img src="{obj.avatar.url}" width="50" height="50" />'
-        return "Нет аватара"
+        return f'<img src="{obj.avatar.url}" width="50" height="50" />' if obj.avatar else ""
 
+    @admin.display(description="Рецепты")
     def recipes_count(self, obj):
         return obj.recipes.count()
 
+    @admin.display(description="Подписки")
     def subscriptions_count(self, obj):
         return obj.subscriptions.count()
 
+    @admin.display(description="Подписчики")
     def followers_count(self, obj):
-        return obj.followers.count()
-
-    setattr(full_name, "short_description", "ФИО")
-    setattr(avatar_image, "short_description", "Аватар")
-    setattr(recipes_count, "short_description", "Рецепты")
-    setattr(subscriptions_count, "short_description", "Подписки")
-    setattr(followers_count, "short_description", "Подписчики")
+        return obj.authors.count()

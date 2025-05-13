@@ -6,13 +6,6 @@ User = get_user_model()
 
 
 class Recipe(models.Model):
-    urn = models.SlugField(
-        unique=True,
-        max_length=10,
-        verbose_name="Уникальный идентификатор",
-        blank=True,
-        null=True,
-    )
     name = models.CharField(max_length=256, verbose_name="Название")
     author = models.ForeignKey(
         User,
@@ -119,6 +112,6 @@ class Favorite(UserRecipeRelationModel):
 class ShoppingCart(UserRecipeRelationModel):
 
     class Meta(UserRecipeRelationModel.Meta):
-        default_related_name = "shopping_cart"
+        default_related_name = "shopping_carts"
         verbose_name = "Список покупок"
         verbose_name_plural = "Списки покупок"

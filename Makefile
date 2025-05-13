@@ -38,7 +38,7 @@ migrate:
 	docker compose --env-file .env exec backend python manage.py migrate
 
 load-ingredients:
-	docker compose --env-file .env exec backend python manage.py loaddata /app/data/db_ingredients.json
+	docker compose --env-file .env exec backend python manage.py import_ingredients /app/data/db_ingredients.json
 
 load-fixtures:
 	docker compose --env-file .env up -d backend

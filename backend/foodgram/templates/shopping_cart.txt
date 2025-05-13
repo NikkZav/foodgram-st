@@ -1,0 +1,8 @@
+Список покупок от {{ date|date:"d.m.Y (H:i)" }}
+
+Продукты:
+{% for product in products %}{{ forloop.counter }}. {{ product.ingredient__name|capfirst }} — {{ product.amount }} {{ product.ingredient__measurement_unit }}
+{% empty %}Нет продуктов в корзине{% endfor %}
+Рецепты:
+{% for recipe in recipes %}- {{ recipe.name }} (@{{ recipe.author.username }})
+{% empty %}Нет рецептов в корзине{% endfor %}

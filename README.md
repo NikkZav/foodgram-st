@@ -151,10 +151,11 @@ make setup-without-data
   ```bash
   make load-fixtures
   ```
-- Загрузить только продукты:
+- Загрузить только ингредиенты:
   ```bash
   make load-ingredients
   ```
+  Импортирует список ингредиентов из файла /app/data/db_ingredients.json в базу данных, используя команду manage.py import_ingredients. Используется для начальной настройки проекта или обновления списка ингредиентов.
 
 ## CI/CD
 Проект включает GitHub Actions (`.github/workflows/main.yml`):
